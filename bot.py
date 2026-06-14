@@ -19,33 +19,42 @@ def run_server():
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 MY_CHAT_ID = int(os.environ.get("MY_CHAT_ID", 0))
 API_URL = "https://check-bind.onrender.com/bindinfo"
+OWNER_HANDLE = "@xnitehere"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.id != MY_CHAT_ID: return
-    await update.message.reply_text("🤖 **XNITE BIND CHECKER**\n\nBas apna **Token** bhejiye, main API se fetch karke details dikha dunga. ⚡")
+    
+    welcome_msg = (
+        "🚀 **WELCOME TO XNITE BIND CHECKER** 🚀\n\n"
+        "✨ *Main aapke account ki bind details nikalne mein expert hoon.*\n\n"
+        "🔹 **Action:** Apna **ACCESS TOKEN** yahan bhejiye.\n"
+        "🔹 **Support:** Koi dikkat ho toh contact karein: " + OWNER_HANDLE + "\n\n"
+        "━━━━━━━━━━━━━━━━\n"
+        "⚡ Powered by: **XNITE**"
+    )
+    await update.message.reply_text(welcome_msg, parse_mode='Markdown')
 
 async def process_token(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.id != MY_CHAT_ID: return
     
     token = update.message.text.strip()
-    
-    # 1. Processing message
-    status_msg = await update.message.reply_text("⏳ **Processing...**")
+    status_msg = await update.message.reply_text("⏳ **Processing request...**")
 
-    # 2. API Call
     try:
         response = requests.get(f"{API_URL}?access_token={token}", timeout=10)
         data = response.json()
         
-        # 3. Result extract karna
         if response.status_code == 200:
-            # Yahan hum nested 'result' ke andar se email nikal rahe hain
             result_data = data.get("result", {})
-            email = result_data.get("email", "Not Found")
+            current_email = result_data.get("email", "Not Found")
+            new_email = result_data.get("email_to_be", "None")
             
-            result_msg = (f"✅ **BIND SUCCESSFUL**\n\n"
-                          f"📧 **Email:** `{email}`\n"
+            # Format results
+            result_msg = (f"✅ **GMAIL CHECK SUCCESSFUL**\n\n"
+                          f"📧 **Current Email:** `{current_email}`\n"
+                          f"📧 **Pending/New Email:** `{new_email if new_email else 'None'}`\n"
                           f"━━━━━━━━━━━━━━━━\n"
+                          f"👤 Owner: {OWNER_HANDLE}\n"
                           f"⚡ Powered by: **XNITE**")
             await status_msg.edit_text(result_msg, parse_mode='Markdown')
         else:
@@ -56,11 +65,7 @@ async def process_token(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 if __name__ == '__main__':
     Thread(target=run_server).start()
-    
     app_bot = ApplicationBuilder().token(BOT_TOKEN).build()
-    
     app_bot.add_handler(CommandHandler("start", start))
-    # Bina command ke token process karega
     app_bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), process_token))
-    
     app_bot.run_polling()
