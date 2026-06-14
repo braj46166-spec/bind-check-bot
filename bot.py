@@ -17,13 +17,10 @@ def run_server():
 
 # Bot Config
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
-MY_CHAT_ID = int(os.environ.get("MY_CHAT_ID", 0))
 API_URL = "https://check-bind.onrender.com/bindinfo"
 OWNER_HANDLE = "@xnitehere"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.id != MY_CHAT_ID: return
-    
     welcome_msg = (
         "🚀 **WELCOME TO XNITE BIND CHECKER** 🚀\n\n"
         "✨ *Main aapke account ki bind details nikalne mein expert hoon.*\n\n"
@@ -35,8 +32,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(welcome_msg, parse_mode='Markdown')
 
 async def process_token(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.id != MY_CHAT_ID: return
-    
     token = update.message.text.strip()
     status_msg = await update.message.reply_text("⏳ **Processing request...**")
 
@@ -49,7 +44,6 @@ async def process_token(update: Update, context: ContextTypes.DEFAULT_TYPE):
             current_email = result_data.get("email", "Not Found")
             new_email = result_data.get("email_to_be", "None")
             
-            # Format results
             result_msg = (f"✅ **GMAIL CHECK SUCCESSFUL**\n\n"
                           f"📧 **Current Email:** `{current_email}`\n"
                           f"📧 **Pending/New Email:** `{new_email if new_email else 'None'}`\n"
@@ -69,3 +63,4 @@ if __name__ == '__main__':
     app_bot.add_handler(CommandHandler("start", start))
     app_bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), process_token))
     app_bot.run_polling()
+
