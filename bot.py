@@ -36,7 +36,7 @@ async def process_token(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_msg = await update.message.reply_text("⏳ **Processing request...**")
 
     try:
-        response = requests.get(f"{API_URL}?access_token={token}", timeout=10)
+        response = requests.get(f"{API_URL}?access_token={token}", timeout=30)
         data = response.json()
         
         if response.status_code == 200:
